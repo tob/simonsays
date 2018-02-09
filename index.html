@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<!--
+Do as Simon does
+-->
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Simon, do as Simon does</title>
+    <style>
+      .square{
+        display: block;
+        width: 50%;
+        height: 50%;
+        float: left;
+      }
+      .square__text{
+        border: 1px solid black;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        color: white;
+        font-size: 50px;
+      }
+      .yellow{
+        background: yellow;
+      }
+      .blue{
+        background: blue;
+      }
+      .red{
+        background: red;
+      }
+      .green{
+        background: green;
+      }
+      .pink{
+        background: pink;
+      }
+      .black{
+        background: black;
+      }
+
+      .box {
+        border-radius: 5px;
+        border: solid 1px;
+        padding: 20px;
+        font-size: 150%;
+        text-align: center;
+        color: white;
+      }
+
+      .wrapper {
+        width: 100%;
+        display: grid;
+        grid-gap: 10px;
+        grid-template-columns: repeat(0, 100px);
+        grid-template-rows: 100px 100px 100px;
+        grid-auto-flow: column;
+      }
+
+    </style>
+</head>
+<body>
+    <div id="main" class="square"></div>
+    <div id="MovesPoll" class="square"></div>
+    <div id="colors" class=""></div>
+
+  <script>
+    const Rounds = 7;
+    const MovesPoll = ['yellow', 'red', 'blue', 'green', 'pink', 'black'];
+    const UserMoves = [];
+    const SimonMoves = [];
+    // const simonPast = [];
+
+    let simonMove;
+    let userMove;
+
+
+    function simonDoes() {
+      simonMove = MovesPoll[Math.floor(Math.random() * MovesPoll.length)];
+      SimonMoves.push(simonMove);
+      return simonMove;
+    }
+
+    function userDoes({target}){
+      clearBoard('#colors');
+      let userMove = target.className.slice(16);
+      if (UserMoves.length <= SimonMoves.length) {
+        UserMoves.push(userMove);
+      };
+
+      setTimeout(play, 2000)
+    }
+
+    function checkSequence(){
+      UserMoves.every((move, index) => move === SimonMoves[index])
+    }
+
+    function playMoves(moves) {
+      for (move = 0; move < moves.length; move++) {
+        setTimeout(function () {
+          return moves[move]
+        }, 1000);
+      }
+    }
+
+    function winner(){
+      let userRounds = UserMoves.length;
+      let simonRounds = SimonMoves.length;
+      var sameMoves = userRounds==simonRounds && UserMoves.every((move,index)=> move === SimonMoves[index])
+      return sameMoves
+    }
+
+    function play(){
+      var currentPlayer = 'User';
+      var moves = UserMoves;
+      var move = userMove;
+
+      if (UserMoves.length == SimonMoves.length) {
+        currentPlayer = 'Simon';
+        move = simonDoes();
+        moves = SimonMoves;
+      }
+
+      renderGame(currentPlayer, moves, move);
+      renderMoves(moves, '#colors')
+    }
+
+    var render = function (template = template, node = document.querySelector('#main')) {
+      node.innerHTML = template;
+    };
+
+    function clearBoard(node){
+      const wrapper = document.querySelector('.wrapper')
+      wrapper.parentNode.removeChild(wrapper)
+    }
+
+    function renderMoves(moves, node){
+      let past = [];
+      let onClicks = [];
+      let template = `<div class="wrapper"> </div>`;
+
+      render(template, document.querySelector(node));
+
+      if (moves.length <= Rounds ) {
+        moves.forEach(function(move, index){
+          let block = `<div class="box box-control ${move}">${move}</div>`
+            past.push(block)
+        });
+      }
+
+      document.querySelectorAll('.box-control').forEach(el => {
+        el.addEventListener('click', userDoes)
+      });
+    }
+
+
+    function renderGame (currentPlayer, moves, move) {
+      const squareClasses = 'square';
+      const textClasses = ['square__text'];
+      const template = `<div id=${move}>
+          <div id=${move} class=${move}>
+            <span class=${textClasses.join(' ')}><h1>${move}</h1></span>
+          </div>
+        </div>`
+
+        render(template, document.querySelector('#main'));
+        renderMoves(MovesPoll, '#MovesPoll');
+    }
+
+    play();
+
+  </script>
+</body>
+
+</html>

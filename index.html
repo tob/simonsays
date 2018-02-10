@@ -6,59 +6,7 @@ Do as Simon does
 <head>
     <meta charset="utf-8" />
     <title>Simon, do as Simon does</title>
-    <style>
-      .square{
-        display: block;
-        width: 50%;
-        height: 50%;
-        float: left;
-      }
-      .square__text{
-        border: 1px solid black;
-        width: 100%;
-        height: 100%;
-        text-align: center;
-        color: white;
-        font-size: 50px;
-      }
-      .yellow{
-        background: yellow;
-      }
-      .blue{
-        background: blue;
-      }
-      .red{
-        background: red;
-      }
-      .green{
-        background: green;
-      }
-      .pink{
-        background: pink;
-      }
-      .black{
-        background: black;
-      }
-
-      .box {
-        border-radius: 5px;
-        border: solid 1px;
-        padding: 20px;
-        font-size: 150%;
-        text-align: center;
-        color: white;
-      }
-
-      .wrapper {
-        width: 100%;
-        display: grid;
-        grid-gap: 10px;
-        grid-template-columns: repeat(0, 100px);
-        grid-template-rows: 100px 100px 100px;
-        grid-auto-flow: column;
-      }
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
     <div id="main" class="square"></div>
@@ -83,7 +31,7 @@ Do as Simon does
     }
 
     function userDoes({target}){
-      clearBoard('#colors');
+      clearBoard('.wrapper-colors');
       let userMove = target.className.slice(16);
       if (UserMoves.length <= SimonMoves.length) {
         UserMoves.push(userMove);
@@ -120,38 +68,48 @@ Do as Simon does
         currentPlayer = 'Simon';
         move = simonDoes();
         moves = SimonMoves;
+        renderMoves(SimonMoves,'colors', '#colors')
       }
 
       renderGame(currentPlayer, moves, move);
-      renderMoves(moves, '#colors')
     }
 
     var render = function (template = template, node = document.querySelector('#main')) {
       node.innerHTML = template;
     };
 
-    function clearBoard(node){
-      const wrapper = document.querySelector('.wrapper')
+    function clearBoard(selector){
+      const wrapper = document.querySelector(selector)
       wrapper.parentNode.removeChild(wrapper)
     }
 
-    function renderMoves(moves, node){
-      let past = [];
-      let onClicks = [];
-      let template = `<div class="wrapper"> </div>`;
+    function renderMovesPoll (){
+      let buttons = []
+      MovesPoll.forEach((move) => {
+        let block = `<div class="box box-control ${move}">${move}</div>`
+        buttons.push(block)
+      })
 
-      render(template, document.querySelector(node));
-
-      if (moves.length <= Rounds ) {
-        moves.forEach(function(move, index){
-          let block = `<div class="box box-control ${move}">${move}</div>`
-            past.push(block)
-        });
-      }
+      var template = `<div class="wrapper-movesPoll wrapper">${buttons.join(' ')}</div>`;
+      render(template, document.querySelector('#MovesPoll'));
 
       document.querySelectorAll('.box-control').forEach(el => {
         el.addEventListener('click', userDoes)
       });
+    }
+
+    function renderMoves(moves, className, node){
+      var past = [];
+      var template = `<div class="wrapper-${className} wrapper"></div>`;
+      render(template, document.querySelector(node));
+
+      if (moves.length <= Rounds ) {
+        moves.forEach(function(move){
+          let block = `<div class="box box-control ${move}">${move}</div>`
+          past.push(block)
+          render(past.join(' '), document.querySelector(`.wrapper-${className}`))
+        });
+      }
     }
 
 
@@ -162,10 +120,12 @@ Do as Simon does
           <div id=${move} class=${move}>
             <span class=${textClasses.join(' ')}><h1>${move}</h1></span>
           </div>
+          <h2>${currentPlayer}</h2>
         </div>`
 
         render(template, document.querySelector('#main'));
-        renderMoves(MovesPoll, '#MovesPoll');
+        // renderMoves(MovesPoll, 'movesPoll', '#MovesPoll');
+        renderMovesPoll();
     }
 
     play();

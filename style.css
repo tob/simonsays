@@ -31,6 +31,10 @@
   background: black;
 }
 
+.off{
+  background: grey;
+}
+
 .box {
   border-radius: 5px;
   border: solid 1px;

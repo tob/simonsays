@@ -8,6 +8,7 @@ let currentRound = 0;
 let simonMove;
 let userMove;
 let userRounds;
+let winner;
 
 function prepareGame(){
   var container = document.querySelector('#MovesPoll')
@@ -24,18 +25,10 @@ function prepareGame(){
 }
 
 function userDoes() {
-  userRounds += 1
   this.classList.remove('off')
-
   userMove = this.className.slice(16);
-
   UserMoves.push(userMove);
-
   setTimeout(offButtons, 1000)
-
-  if (UserMoves.length === SimonMoves.length){
-    flashButtons()
-  }
 
   setTimeout(playRound(), 1000)
 }
@@ -44,9 +37,28 @@ function simonDoes() {
   let move = Math.floor(Math.random() * MovesPoll.length)
   simonMove = MovesPoll[move];
   SimonMoves.push(simonMove);
-  console.log('simon says: ' + simonMove);
   onButton(move);
   return simonMove;
+}
+
+function checkSequence(){
+  if (UserMoves.length < 0) {
+    let count = 0;
+    let same = 0;
+    UserMoves.forEach(move  => {
+      count++
+      var simonCurrent = SimonMoves[count--] //count-- because of array index -1
+      if (move === simonCurrent){
+        debugger
+        console.log('same move' + count--)
+        same++
+      };
+      console.log('end for Each in checkSequence');
+      if (same === SimonMoves.length){
+        return true
+      }
+    })
+  }
 }
 
 function playRound(){
@@ -56,19 +68,26 @@ function playRound(){
     var moves = UserMoves
     var move = userMove;
 
-    var winner = checkSequence();
+    // winner = checkSequence();
+    winner = UserMoves.join(' ') === SimonMoves.join(' ');
 
-    if (winner)  {
+    if (winner || currentRound <= 1)  {
+      debugger
         currentPlayer = 'Simon';
         move= '';
         move = simonDoes();
         moves = SimonMoves;
+        UserMoves = []
+    }
+
+    if (!winner && UserMoves.length === SimonMoves.length) {
+      UserMoves = []
     }
 
     console.log(
       `Round of: ${currentPlayer}
         moves: ${moves}
-        move: ${moves}
+        move: ${move}
 
         Current round: ${currentRound}
         Usermoves: ${UserMoves}

@@ -107,12 +107,11 @@ Do as Simon does
       if (moves.length <= Rounds ) {
         moves.forEach(function(move){
           let block = document.createElement('div')
-          block.className = `box box-control ${move}`
-          // `<div class="box box-control ${move}">${move}</div>`
-          past.push(block)
-          debugger
-          container.appendChild(block)
-          render(block, document.querySelector(`.wrapper-${className}`))
+          block.className = `box ${move}`
+          block.innerHTML = move
+          setTimeout(function createBlock() {
+              container.appendChild(block);
+          },1000)
         });
       }
     }

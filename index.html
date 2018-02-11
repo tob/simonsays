@@ -102,12 +102,17 @@ Do as Simon does
       var past = [];
       var template = `<div class="wrapper-${className} wrapper"></div>`;
       render(template, document.querySelector(node));
+      var container = document.querySelector(`.wrapper-${className}`);
 
       if (moves.length <= Rounds ) {
         moves.forEach(function(move){
-          let block = `<div class="box box-control ${move}">${move}</div>`
+          let block = document.createElement('div')
+          block.className = `box box-control ${move}`
+          // `<div class="box box-control ${move}">${move}</div>`
           past.push(block)
-          render(past.join(' '), document.querySelector(`.wrapper-${className}`))
+          debugger
+          container.appendChild(block)
+          render(block, document.querySelector(`.wrapper-${className}`))
         });
       }
     }

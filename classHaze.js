@@ -29,8 +29,7 @@ function userDoes() {
   userMove = this.className.slice(16);
   UserMoves.push(userMove);
   setTimeout(offButtons, 1000)
-
-  setTimeout(playRound(), 1000)
+  setTimeout(playRound(), 2000)
 }
 
 function simonDoes() {
@@ -38,6 +37,7 @@ function simonDoes() {
   simonMove = MovesPoll[move];
   SimonMoves.push(simonMove);
   onButton(move);
+  setTimeout(offButtons, 1000)
   return simonMove;
 }
 
@@ -49,11 +49,8 @@ function checkSequence(){
       count++
       var simonCurrent = SimonMoves[count--] //count-- because of array index -1
       if (move === simonCurrent){
-        debugger
-        console.log('same move' + count--)
         same++
       };
-      console.log('end for Each in checkSequence');
       if (same === SimonMoves.length){
         return true
       }
@@ -62,8 +59,6 @@ function checkSequence(){
 }
 
 function playRound(){
-  if (currentRound <= 14) {
-    currentRound = currentRound + 1
     var currentPlayer = 'User';
     var moves = UserMoves
     var move = userMove;
@@ -72,12 +67,11 @@ function playRound(){
     winner = UserMoves.join(' ') === SimonMoves.join(' ');
 
     if (winner || currentRound <= 1)  {
-      debugger
-        currentPlayer = 'Simon';
-        move= '';
-        move = simonDoes();
-        moves = SimonMoves;
-        UserMoves = []
+      currentPlayer = 'Simon';
+      move= '';
+      move = setTimeout(simonDoes, 2000);
+      moves = SimonMoves;
+      UserMoves = []
     }
 
     if (!winner && UserMoves.length === SimonMoves.length) {
@@ -85,15 +79,14 @@ function playRound(){
     }
 
     console.log(
-      `Round of: ${currentPlayer}
-        moves: ${moves}
-        move: ${move}
+      `
+      Round of: ${currentPlayer}
+      moves: ${moves}
+      move: ${move}
 
-        Current round: ${currentRound}
-        Usermoves: ${UserMoves}
-        SimonMoves: ${SimonMoves}`);
-
-  }
+      Current round: ${currentRound}
+      Usermoves: ${UserMoves}
+      SimonMoves: ${SimonMoves}`);
 
 }
 
@@ -117,7 +110,6 @@ function onButtons(){
 function onButton(move){
   var buttons = document.querySelectorAll('.box-control')
   if (move) {
-    console.log('button off');
     buttons[move].classList.remove('off')
   }
 }

@@ -26,24 +26,25 @@ function prepareGame(){
 
 function userDoes() {
   this.classList.remove('off')
+  setTimeout(offButtons, 1000)
   userMove = this.className.slice(16);
   UserMoves.push(userMove);
-  setTimeout(offButtons, 1000)
-  setTimeout(playRound(), 2000)
+  console.log(simonMove);
+  setTimeout(playRound, 2000)
+  return userMove
 }
 
 function simonDoes() {
   let move = Math.floor(Math.random() * MovesPoll.length)
   simonMove = MovesPoll[move];
   SimonMoves.push(simonMove);
-  onButton(move);
-  setTimeout(offButtons, 1000)
+  onButton(simonMove)
   return simonMove;
 }
 
 function checkSequence(){
-  if (UserMoves.length < 0) {
-    let count = 0;
+  if (UserMoves.length < 2) {
+    let count = -1;
     let same = 0;
     UserMoves.forEach(move  => {
       count++
@@ -51,43 +52,12 @@ function checkSequence(){
       if (move === simonCurrent){
         same++
       };
-      if (same === SimonMoves.length){
-        return true
-      }
     })
+
+    if (same === UserMoves.length){
+     return true
+    }
   }
-}
-
-function playRound(){
-    var currentPlayer = 'User';
-    var moves = UserMoves
-    var move = userMove;
-
-    // winner = checkSequence();
-    winner = UserMoves.join(' ') === SimonMoves.join(' ');
-
-    if (winner || currentRound <= 1)  {
-      currentPlayer = 'Simon';
-      move= '';
-      move = setTimeout(simonDoes, 2000);
-      moves = SimonMoves;
-      UserMoves = []
-    }
-
-    if (!winner && UserMoves.length === SimonMoves.length) {
-      UserMoves = []
-    }
-
-    console.log(
-      `
-      Round of: ${currentPlayer}
-      moves: ${moves}
-      move: ${move}
-
-      Current round: ${currentRound}
-      Usermoves: ${UserMoves}
-      SimonMoves: ${SimonMoves}`);
-
 }
 
 function offButtons(){
@@ -95,6 +65,39 @@ function offButtons(){
   buttons.forEach(button => {
       button.classList.add('off')
   });
+}
+
+function playRound(){
+    currentRound++
+    var currentPlayer = 'User';
+    var moves = UserMoves
+    var move = userMove;
+
+    winner = UserMoves.join(' ') === SimonMoves.join(' ');
+    var tempWin = checkSequence();
+
+    if (winner)  {
+      currentPlayer = 'Simon';
+      move = simonDoes();
+      moves = SimonMoves;
+      UserMoves = []
+      console.log('Adding another');
+    }
+
+    if (!tempWin) {
+      UserMoves = []
+      console.log('empty bucket');
+    }
+
+
+    console.log(
+      `
+      Previous round: ${tempWin ? 'won' : 'lost' }
+
+      Current round: ${currentRound}
+      Round of: ${currentPlayer}
+      Usermoves: ${UserMoves}
+      SimonMoves: ${SimonMoves}`);
 }
 
 function onButtons(){
@@ -108,21 +111,22 @@ function onButtons(){
 }
 
 function onButton(move){
+  // this.classList.remove('off')
   var buttons = document.querySelectorAll('.box-control')
-  if (move) {
-    buttons[move].classList.remove('off')
-  }
+  buttons.forEach(button => {
+    buttonClass = button.className.slice(16, -4);
+    if (move == buttonClass) {
+      button.classList.remove('off')
+      setTimeout(offButtons, 1000)
+    }
+  });
 }
 
 
 
 function flashButtons(){
-    setTimeout(onButtons, 500)
-    setTimeout(offButtons,1000)
-    setTimeout(onButtons, 1500)
-    setTimeout(offButtons,2000)
-    setTimeout(onButtons, 2500)
-    setTimeout(offButtons,3000)
+    onButtons();
+    setTimeout(onButtons, 1500);
 }
 
 function playMoves(moves){

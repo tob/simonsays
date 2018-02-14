@@ -3,6 +3,7 @@ const MovesPoll = ['yellow', 'red', 'blue', 'green', 'pink', 'black'];
 let UserMoves = [];
 let SimonMoves = [];
 let currentRound = 0;
+let blocks = []
 // const simonPast = [];
 
 let simonMove;
@@ -10,8 +11,9 @@ let userMove;
 let userRounds;
 let winner;
 
+
 function prepareGame(){
-  var container = document.querySelector('#MovesPoll')
+  var container = document.querySelector('#MovesPoll');
   MovesPoll.forEach((move) => {
     var block = document.createElement('div')
     block.classList.add(`box-control`)
@@ -19,17 +21,19 @@ function prepareGame(){
     block.classList.add(`${move}`)
     block.classList.add(`off`)
     block.addEventListener('click', userDoes)
-    container.appendChild(block)
+    blocks.push(block)
   })
+
+  container.append(...blocks)
   playRound();
 }
 
-function userDoes() {
-  this.classList.remove('off')
-  setTimeout(offButtons, 1000)
+function userDoes(e) {
+  e.target.classList.remove('off')
+  onButton(e.target);
   userMove = this.className.slice(16);
   UserMoves.push(userMove);
-  console.log(simonMove);
+  console.log(userMove);
   setTimeout(playRound, 2000)
   return userMove
 }
@@ -37,8 +41,9 @@ function userDoes() {
 function simonDoes() {
   let move = Math.floor(Math.random() * MovesPoll.length)
   simonMove = MovesPoll[move];
+  let block = blocks[move]
   SimonMoves.push(simonMove);
-  onButton(simonMove)
+  onButton(block)
   return simonMove;
 }
 
@@ -77,6 +82,7 @@ function playRound(){
     var tempWin = checkSequence();
 
     if (winner)  {
+      playMoves();
       currentPlayer = 'Simon';
       move = simonDoes();
       moves = SimonMoves;
@@ -110,16 +116,15 @@ function onButtons(){
   });
 }
 
-function onButton(move){
-  // this.classList.remove('off')
-  var buttons = document.querySelectorAll('.box-control')
-  buttons.forEach(button => {
-    buttonClass = button.className.slice(16, -4);
-    if (move == buttonClass) {
-      button.classList.remove('off')
-      setTimeout(offButtons, 1000)
-    }
-  });
+function offButton(element) {
+  element.classList.add('off')
+}
+
+function onButton(element){
+  element.classList.remove('off')
+  setTimeout(function() {
+     offButton(element)
+   }, 1000);
 }
 
 
@@ -129,17 +134,14 @@ function flashButtons(){
     setTimeout(onButtons, 1500);
 }
 
-function playMoves(moves){
-  var buttons = document.querySelectorAll('.box-control')
-  buttons.forEach((button, i )=> {
-    if (moves[i] === SimonMoves[i])
-    setTimeout(function(){
-      button.classList.remove('off')
+function playMoves(){
+  if (SimonMoves > 0) {
+    SimonMoves.forEach(move => {
       setTimeout(function(){
-        button.classList.add('off')
-      });
-    }, 1000);
-  });
+        move.classList.remove('off')
+      }, 1000);
+    });
+  }
 }
 
 function selectButton(){}

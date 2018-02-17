@@ -1,20 +1,20 @@
 const Rounds = 7;
-const MovesPoll = ['yellow', 'red', 'blue', 'green', 'pink', 'black'];
-let UserMoves = [];
-let SimonMoves = [];
-let currentRound = 0;
-let blocks = []
-// const simonPast = [];
+const Colors = ['yellow', 'red', 'blue', 'green', 'pink', 'black'];
+const MovesPoll = [];
+const blocks = [];
 
+let currentRound = 0;
 let simonMove;
+let SimonMoves = [];
 let userMove;
+let UserMoves = [];
 let userRounds;
 let winner;
 
+var container = document.querySelector('#MovesPoll');
 
 function prepareGame(){
-  var container = document.querySelector('#MovesPoll');
-  MovesPoll.forEach((move) => {
+  Colors.forEach((move) => {
     var block = document.createElement('div')
     block.classList.add(`box-control`)
     block.classList.add(`box`)
@@ -22,6 +22,13 @@ function prepareGame(){
     block.classList.add(`off`)
     block.addEventListener('click', userDoes)
     blocks.push(block)
+
+    MovesPoll.push(
+      {
+        className: move,
+        element: block,
+      }
+    )
   })
 
   container.append(...blocks)
@@ -32,44 +39,42 @@ function userDoes(e) {
   e.target.classList.remove('off')
   onButton(e.target);
   userMove = this.className.slice(16);
-  UserMoves.push(userMove);
-  console.log(userMove);
-  setTimeout(playRound, 2000)
+
+  UserMoves.push(
+    {
+      className: userMove,
+      element: e.target,
+    }
+  );
+  playRound()
   return userMove
 }
 
 function simonDoes() {
   let move = Math.floor(Math.random() * MovesPoll.length)
   simonMove = MovesPoll[move];
-  let block = blocks[move]
   SimonMoves.push(simonMove);
-  onButton(block)
-  return simonMove;
+  return simonMove.className;
 }
 
+//Refactor this - avoid to go through all of them
 function checkSequence(){
-  if (UserMoves.length < 2) {
-    let count = -1;
+  if (UserMoves.length > 0) {
+    let count = 0;
     let same = 0;
     UserMoves.forEach(move  => {
-      count++
-      var simonCurrent = SimonMoves[count--] //count-- because of array index -1
-      if (move === simonCurrent){
+      if (move.className === SimonMoves[count].className){
         same++
+        //Refactor this to just update the value
+        var text = document.createTextNode(same);
+        container.appendChild(text)
       };
+      count++
     })
-
     if (same === UserMoves.length){
      return true
     }
   }
-}
-
-function offButtons(){
-  var buttons = document.querySelectorAll('.box-control')
-  buttons.forEach(button => {
-      button.classList.add('off')
-  });
 }
 
 function playRound(){
@@ -78,42 +83,23 @@ function playRound(){
     var moves = UserMoves
     var move = userMove;
 
-    winner = UserMoves.join(' ') === SimonMoves.join(' ');
     var tempWin = checkSequence();
 
-    if (winner)  {
-      playMoves();
+    if (!tempWin) {
+      console.log('Computer says: no - empty bucket');
+      UserMoves = [];
+    }
+
+    winner = tempWin && UserMoves.length === SimonMoves.length;
+
+    if (winner || currentRound === 1)  {
       currentPlayer = 'Simon';
       move = simonDoes();
       moves = SimonMoves;
+      setTimeout(playMoves, 1000);
       UserMoves = []
-      console.log('Adding another');
+      console.log('Computer says:' + moves[0].className );
     }
-
-    if (!tempWin) {
-      UserMoves = []
-      console.log('empty bucket');
-    }
-
-
-    console.log(
-      `
-      Previous round: ${tempWin ? 'won' : 'lost' }
-
-      Current round: ${currentRound}
-      Round of: ${currentPlayer}
-      Usermoves: ${UserMoves}
-      SimonMoves: ${SimonMoves}`);
-}
-
-function onButtons(){
-  var buttons = document.querySelectorAll('.box-control')
-  buttons.forEach(button => {
-      button.classList.remove('off')
-      setTimeout(function(){
-        button.classList.add('off')
-      }, 1000)
-  });
 }
 
 function offButton(element) {
@@ -128,23 +114,15 @@ function onButton(element){
 }
 
 
-
-function flashButtons(){
-    onButtons();
-    setTimeout(onButtons, 1500);
-}
-
+//Refactor delay
 function playMoves(){
-  if (SimonMoves > 0) {
-    SimonMoves.forEach(move => {
+  if (SimonMoves.length > 0) {
+    SimonMoves.forEach((move, index) => {
       setTimeout(function(){
-        move.classList.remove('off')
-      }, 1000);
+        onButton(move.element)
+      }, 1000 * index);
     });
   }
 }
-
-function selectButton(){}
-function colorButton(){}
 
 prepareGame()

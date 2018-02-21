@@ -1,11 +1,11 @@
-const Rounds = 2;
+const Rounds = 3;
 const Colors = ['yellow', 'red', 'blue', 'green', 'pink', 'black'];
 const MovesPoll = [];
 const blocks = [];
 
 let currentRound = 0;
 let simonMove;
-let SimonMoves = [];
+let AlbertMoves = [];
 let userMove;
 let UserMoves = [];
 let userRounds;
@@ -28,6 +28,8 @@ function prepareGame(){
       {
         className: move,
         element: block,
+        // sound:,
+        // keyElem:,
       }
     )
 
@@ -38,6 +40,14 @@ function prepareGame(){
 }
 
 function userDoes(e) {
+  if (UserMoves.length === Rounds && AlbertMoves.length === Rounds) {
+    renderText(
+`    _██_\n</br>
+ ‹(•¿•)›\n</br>
+ ..(█)\n</br>
+ .../ I`, 1000, 'NotAlbert')
+    return
+  }
   onButton(e.target);
   userMove = this.className.slice(16);
 
@@ -54,25 +64,26 @@ function userDoes(e) {
 function simonDoes() {
   let move = Math.floor(Math.random() * MovesPoll.length)
   simonMove = MovesPoll[move];
-  SimonMoves.push(simonMove);
+  AlbertMoves.push(simonMove);
   return simonMove.className;
 }
 
 //Refactor this - avoid to go through all of them
+//or find a way to stop it immediatly when wrong
 function checkSequence(){
   if (UserMoves.length > 0) {
     let count = 0;
     let same = 0;
 
     UserMoves.forEach(move  => {
-      if (move.className === SimonMoves[count].className){
+      if (move.className === AlbertMoves[count].className){
         same++
         renderText(`Computer says: ${same} correct`, 5000)
       };
       count++
     })
     if (same === Rounds) {
-      renderText('Computer says: yes', 5000, 'Simon')
+      renderText('Computer says: yes', 5000, 'Albert')
       return 'win'
     }
     if (same === UserMoves.length){
@@ -91,49 +102,53 @@ function playRound(){
     var tempWin = checkSequence();
 
     if (tempWin === 'wrong' && currentPlayer === 'User') {
-      renderText('Computer says: no', 1000, 'NotSimon')
+      renderText('Computer says: no', 1000, 'NotAlbert')
       UserMoves = [];
     }
 
-    winner = tempWin && UserMoves.length === SimonMoves.length;
+    winner = tempWin && UserMoves.length === AlbertMoves.length;
 
     if (firstRound || tempWin === 'tempWin' && UserMoves.length <= Rounds ){
       if (firstRound || winner)  {
-        currentPlayer = 'Simon';
+        currentPlayer = 'Albert';
         move = simonDoes();
-        moves = SimonMoves;
+        moves = AlbertMoves;
         UserMoves = [];
         setTimeout( function() {
-          playMoves(SimonMoves, 1000)
+          playMoves(AlbertMoves, 1000)
         }, 1000);
 
       }
     }
 
     if (tempWin === 'win'){ //Winner
-      //flash buttons
-      for (var i = 0; i < 10; i++) {
-        setTimeout(function() {
-          playMoves(MovesPoll, 200)
-        }, 1200 * i)
-      }
-
-      //restart game
-      var restart = document.createElement('button')
-      var winText = renderText('Restart', 1000, 'NotSimon')
-      restart.classList.add(`restart`)
-      restart.textContent = 'Restart'
-      restart.addEventListener('click', restart, true)
-      container.append(restart)
-
+      playWin();
+      renderRestartBtn();
       currentPlayer = 'User'
       return
     }
 }
 
-function renderText(string, duration = 500, currentPlayer = 'Simon') {
+function renderRestartBtn(){
+  var restart = document.createElement('button')
+  restart.classList.add(`restart`)
+  restart.textContent = '° ͜ʖ ° '
+  restart.addEventListener('click', restartGame, true)
+  container.append(restart)
+}
+
+function playWin(){
+  //flash buttons
+  for (var i = 0; i <= Rounds; i++) {
+    setTimeout(function() {
+      playMoves(MovesPoll, 200)
+    }, 1200 * i)
+  }
+}
+
+function renderText(string, duration = 500, currentPlayer = 'Albert') {
   text.innerHTML = string
-  if (currentPlayer !== 'Simon') {
+  if (currentPlayer !== 'Albert') {
     setTimeout(function(){
       text.innerHTML = '';
     }, duration)
@@ -165,24 +180,37 @@ function activateUI(){
 
 //Refactor delay ?
 function playMoves(moves, duration){
-  // disableUI()
+  disableUI()
   if (moves.length > 0) {
     moves.forEach((move, index) => {
       setTimeout(function(){
-        renderText(`Computer says: ${move.className}`)
-        onButton(move.element)
+        renderText(`Computer says: ${move.className}`);
+        onButton(move.element);
       }, duration * index);
     });
   }
   // activateUI()
 }
 
-function restart(){
+function cheat(){
+  document.addEventListener('keydown', (event) => {
+  const keyName = event.key;
+    if (keyName === 'Alt') {
+      return;
+    }
+
+    if (event.altKey && keyName === 'Dead') {
+      playWin();
+    }
+  });
+}
+
+function restartGame(){
   currentRound = 0;
-  SimonMoves = [];
+  AlbertMoves = [];
   UserMoves = [];
-  debugger
   playRound();
 }
 
 prepareGame()
+cheat()

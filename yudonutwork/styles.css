@@ -1,77 +1,32 @@
 body {
   background: #efefef;
   font-family: system-ui, sans-serif;
+  padding: 0px;
+  margin: 0px;
 }
 
-.square{
-  display: block;
-  width: 50%;
-  height: 50%;
-  float: left;
-}
-.square__text{
-  border: 1px solid black;
+button {
   width: 100%;
   height: 100%;
-  text-align: center;
-  color: white;
-  font-size: 50px;
-}
-
-.title {
-  font-size: 24px;
-}
-.yellow{
-  background: yellow;
-}
-.yellow.highlight {
-  background: orange;
-}
-
-.blue{
-  background: blue;
-}
-.red{
-  background: red;
-}
-.green{
-  background: green;
-}
-.pink{
-  background: pink;
-}
-.black{
-  background: black;
-}
-
-.off{
-  background: grey;
-}
-
-.highlight{
-  background: black;
-}
-
-.box {
+  border: 1px solid black;
   border-radius: 5px;
-  border: solid 1px;
-  padding: 20px;
-  font-size: 150%;
-  text-align: center;
-  color: white;
 }
 
 .wrapper {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   padding-top: 5%;
+  min-height: 200px;
 }
 * {box-sizing: border-box;}
 
 #center{
   /* border: 1px solid #000; */
   border-radius: 5px;
-  margin: 10px;
+  margin: 0 auto;
+  padding: 0px;
+  width: 200px;
+  height: 200px;
 }
 
 .wrapper > div {

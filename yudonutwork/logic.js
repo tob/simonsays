@@ -2,11 +2,17 @@ const stringsBucket = ['y'];
 const lettersBucket = '';
 const letterPoll = 'YUDonutWork';
 const internetconnection = false;
+const messages = [
+  `° ͜ʖ °`,
+  ` ͡ ° ͜ʖ ͡ °`,
+  `( ͡ ° ͜ʖ ͡ ° )`
+  ]
 
 let Round = 0;
-let computerSays;
+let computerLetter;
 let computerLetters = ['y'];
-let userSays;
+let computerStrings = [];
+let userLetter;
 let userLetters = [];
 let userStrings = [];
 let winner;
@@ -23,15 +29,16 @@ function addListeners() {
 }
 
 function userDoes(e) {
-  var letter = e.key;
+    clearContainer()
+  userLetter = e.key;
   //if user Clicks on button
   if (e.target.innerHTML === stringsBucket[0]){
-    letter = e.target.innerHTML
+    userLetter = e.target.innerHTML
   }
 
-  userLetters.push(letter)
+  userLetters.push(userLetter)
   playRound()
-  return letter
+  return userLetter
 }
 
 
@@ -64,9 +71,9 @@ function renderNoConnection(){
 
 function computerChooseLetter() {
   let letter = Math.floor(Math.random() * letterPoll.length)
-  computerSays = letterPoll[letter];
-  computerLetters.push(computerSays);
-  return computerSays;
+  computerLetter = letterPoll[letter];
+  computerLetters.push(computerLetter.toLowerCase());
+  return computerLetter;
 }
 
 //Refactor this - avoid to go through all of them
@@ -78,8 +85,10 @@ function checkSequence(){
 
     userLetters.forEach(letter  => {
       if (letter === computerLetters[count]){
-        same++
-        renderText(`Computer says: ${same} correct`, 5000)
+        same++;
+        clearContainer();
+        let message = messages[count] || `correct + ${count}`;
+        renderText(message, 1000, 'user')
       };
       count++
     })
@@ -94,11 +103,50 @@ function checkSequence(){
   }
 }
 
+function clearContainer(){
+  container.innerHTML = '';
+}
+
+function playWin(){
+  //flash buttons
+  for (var i = 0; i <= lettersBucket.length; i++) {
+    setTimeout(function() {
+      playLetters(lettersBucket, 1000)
+    }, 1200 * i)
+  }
+}
+
+function renderText(string, duration = 1000, currentPlayer = 'Computer') {
+  var letter = document.createElement('button');
+  letter.innerHTML = `<h2>${string}</h2>`;
+  container.appendChild(letter)
+  if (currentPlayer = 'Computer'){
+    setTimeout(function(){
+      try {
+          container.removeChild(letter)
+      } catch (e) {
+        console.log(`${letter.innerHTML}was already deleted`);
+      }
+    }, duration);
+  }
+}
+
+//Refactor delay ?
+function playLetters(moves, duration = 1000){
+  if (moves.length > 0) {
+    moves.forEach((letter, index) => {
+      setTimeout(function(){
+        renderText(letter);
+      }, duration * index);
+    });
+  }
+}
+
 function playRound(){
     currentRound++
     var currentPlayer = 'User';
     var letters = userLetters
-    var letter = userSays;
+    var letter = userLetter;
     var firstRound = currentRound === 1
     var tempWin = checkSequence();
 
@@ -109,14 +157,13 @@ function playRound(){
     }
 
     winner = tempWin && userLetters.length === computerLetters.length;
-
-    if (firstRound || tempWin === 'tempWin' && userWords.length <= currentRound ){
+    if (firstRound || tempWin === 'tempWin' && userStrings.length <= currentRound ){
       if (firstRound || winner)  {
         currentPlayer = 'Computer';
         move = computerChooseLetter();
         moves = computerLetters;
         userLetters = [];
-        console.log(`currentPlayer: ${currentPlayer}`);
+        console.log(`currentPlayer: ${currentPlayer}, currentLetter: ${move}, array: ${computerLetters}`);
         setTimeout( function() {
           playLetters(computerLetters, 1000)
         }, 1000);
@@ -126,54 +173,9 @@ function playRound(){
 
     if (tempWin === 'win'){ //Winner
       playWin();
-      renderRestartBtn();
       currentPlayer = 'User'
       return
     }
-}
-
-function renderRestartBtn(){
-  var restart = document.createElement('button')
-  restart.classList.add(`restart`)
-  restart.textContent = '° ͜ʖ ° '
-  restart.addEventListener('click', restartGame, true)
-  container.append(restart)
-}
-
-function playWin(){
-  //flash buttons
-  for (var i = 0; i <= lettersBucket.length; i++) {
-    setTimeout(function() {
-      playLetters(lettersBucket, 200)
-    }, 1200 * i)
-  }
-}
-
-function renderText(string, duration = 1000, currentPlayer = 'Computer') {
-  var letter = document.createElement('button');
-  letter.innerHTML = string;
-  container.appendChild(letter)
-    setTimeout(function(){
-      container.innerHTML = '';
-    }, duration);
-}
-
-//Refactor delay ?
-function playLetters(moves, duration){
-  // disableUI()
-  if (moves.length > 0) {
-    moves.forEach((letter, index) => {
-      setTimeout(function(){
-        renderText(letter);
-      }, duration * index);
-    });
-  }
-}
-function restartGame(){
-  currentRound = 0;
-  computerLetters = [];
-  userLetters = [];
-  playRound();
 }
 
 renderNoConnection()

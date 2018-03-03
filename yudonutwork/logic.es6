@@ -1,9 +1,16 @@
-// import snowfallConfig from 'snowfall.js';
-
-const stringsBucket = ['Y'];
-const lettersBucket = '';
-const letterPoll = 'WASD';
 const internetconnection = false;
+const noConnectionMessage = `<div id="main-message">
+      <h1>There is no Internet connection</h1>
+      <div id="suggestions-list">
+        <p>Try:</p>
+        <ul>
+          <li >Checking the network cables, modem and router</li>
+          <li >Reconnecting to Wi-Fi</li>
+          <li ><a>Running Network Diagnostics</a></li>
+        </ul>
+      </div>
+      <div class="error-code">ERR_INTERNET_DISCONNECTED</div>
+    </div>`;
 
 const snowfallConfig = {
   "particles": {
@@ -111,21 +118,10 @@ const snowfallConfig = {
   "retina_detect": true
 }
 
-let Round = 0;
-let computerLetter;
-let computerLetters = [];
-let computerStrings = [];
-let computerMoves = []
-let currentPlayer = 'User';
 let userLetter;
-let userMoves = [];
-let userStrings = [];
-let winner;
-let currentRound = 0;
-let correct = 0;
 let pressButtons;
-let releaseButton;
-let speed = 1000;
+let releaseButtons;
+let playLettersTime;
 
 var wrapper = document.querySelector('.wrapper');
 var container = document.querySelector('#message');
@@ -135,104 +131,127 @@ var bottom = document.querySelector('#bottom');
 var left = document.querySelector('#left');
 var right = document.querySelector('#right');
 
-const MovesPoll = [
-  {
-    letter: 'W',
-    node: upper,
-    color: '#ff0000'
-  },
-  {
-    letter: 'A',
-    node: left,
-    color: '#FFFF00'
-  },
-  {
-    letter: 'S',
-    node: bottom,
-    color: '#008000'
-  },
-  {
-    letter: 'D',
-    node: right,
-    color: '#0000ff'
-  }
-]
+const gameState = {
+  buttons: [
+    {
+      letter: 'W',
+      node: document.querySelector('#upper'),
+    },
+    {
+      letter: 'A',
+      node: document.querySelector('#left'),
+    },
+    {
+      letter: 'S',
+      node: document.querySelector('#bottom'),
+    },
+    {
+      letter: 'D',
+      node: document.querySelector('#right'),
+    }
+  ],
+  correct: 0,
+  move: {},
+  moves: [],
+  pcMoves: [],
+  player: 'User',
+  round: 0,
+  speed: 1000,
+  tempWin: true,
+  winner: false,
+  message: '',
+}
 
+var {
+  buttons,
+  correct,
+  message,
+  move,
+  moves,
+  pcMoves,
+  player,
+  round,
+  speed,
+  tempWin,
+  winner,
+} = {...gameState}
 
 function addListeners() {
   document.addEventListener('keydown', userDoes, true);
 }
 
+function shake(node) {
+  node.classList.add('shake')
+  setTimeout(function(){
+    node.classList.remove('shake')
+  }, speed)
+}
+
 function userDoes(e) {
-  if (currentPlayer === 'Computer') {
-    console.log('not your turn, now is time of' + currentPlayer);
-    clearTimeout(pressButtons);
-    container.classList.add('message')
+  console.log(  buttons,
+    correct,
+    message,
+    move,
+    moves,
+    pcMoves,
+    player,
+    round,
+    speed,
+    tempWin,
+    winner,);
+
+  if (player === 'Computer') {
+    console.log('not your turn, now is time of' + player);
+    shake(wrapper)
     clearContainer();
-    wrapper.classList.add('shake')
-    setTimeout(function() {
-      wrapper.classList.remove('shake')
-    }, speed);
     renderText('<h1>NOT YOUR TURN</h1>', message, speed)
-    playRound('User')
+    setTimeout(function() {
+      renderLostRound();
+    }, speed);
     return
   }
-  userLetter = e.key;
-  //if user Clicks on button
-  if (e.target.innerHTML === stringsBucket[0]){
-    userLetter = e.target.innerHTML
+
+  if (player === 'User') {
+    userLetter = e.key;
+    //if user Clicks on Y button
+    if (e.target.innerHTML === 'Y'){
+      userLetter = e.target.innerHTML
+    }
+
+    var move = {};
+    switch (userLetter) {
+      case 'w':
+          move = buttons[0]
+        break;
+      case 'a':
+          move = buttons[1]
+        break;
+      case 's':
+          move = buttons[2]
+        break;
+      case 'd':
+          move = buttons[3]
+        break;
+      default:
+       move = {
+         letter: '###',
+         node: bottomCenter
+       }
+    }
+    moves.push(move)
+    clearContainer();
+    renderText(move.letter, move.node, 500, player);
+    playRound('User')
   }
-
-  clearContainer();
-
-  var move = {};
-  switch (userLetter) {
-    case 'w':
-        move = MovesPoll[0]
-      break;
-    case 'a':
-        move = MovesPoll[1]
-      break;
-    case 's':
-        move = MovesPoll[2]
-      break;
-    case 'd':
-        move = MovesPoll[3]
-      break;
-    default:
-     move = {
-       letter: '###',
-       node: bottomCenter
-     }
-  }
-
-  userMoves.push(move)
-  renderText(move.letter, move.node, 500, currentPlayer);
-  playRound('User')
-
   return move
 }
 
 function renderNoConnection(){
-  const noConnectionMessage = `<div id="main-message">
-        <h1>There is no Internet connection</h1>
-        <div id="suggestions-list">
-          <p>Try:</p>
-          <ul>
-            <li >Checking the network cables, modem and router</li>
-            <li >Reconnecting to Wi-Fi</li>
-            <li ><a>Running Network Diagnostics</a></li>
-          </ul>
-        </div>
-        <div class="error-code">ERR_INTERNET_DISCONNECTED</div>
-      </div>`;
-
   container.innerHTML = noConnectionMessage;
-
   var list = document.querySelector('ul')
   var helpMessage = document.createElement('li');
   var startLetter = document.createElement('button');
-  startLetter.innerHTML = stringsBucket[Round]
+  startLetter.innerHTML = 'Y'
   startLetter.addEventListener('click', userDoes, true);
   helpMessage.innerHTML = `Asking your browser `
   helpMessage.append(startLetter);
@@ -240,37 +259,39 @@ function renderNoConnection(){
 }
 
 function computerChooseLetter() {
-  let letter = Math.floor(Math.random() * letterPoll.length)
-  computerMove = MovesPoll[letter];
-  computerLetters.push(computerMove.letter.toLowerCase());
-  computerMoves.push(computerMove)
+  let letter = Math.floor(Math.random() * buttons.length)
+  computerMove = buttons[letter];
+  pcMoves.push(computerMove)
   return computerMove.letter;
 }
 
-function updateBackground(move = MovesPoll[0]){
+function updateBackground(move = buttons[0]){
   console.log(correct);
   snowfallConfig.particles.number.value = correct
-  snowfallConfig.particles.line_linked.distance = 300 * computerMoves.length
-  snowfallConfig.particles.shape.polygon.nb_sides = 3 + computerMoves.length
-  if (MovesPoll.length > 0) {
+  snowfallConfig.particles.line_linked.distance = 300 * pcMoves.length
+  snowfallConfig.particles.shape.polygon.nb_sides = 3 + pcMoves.length
+  if (buttons.length > 0) {
     snowfallConfig.particles.color.value = move.color
   }
   particlesJS("snowfall",{...snowfallConfig})
 }
 
 function checkSequence(){
-  if (userMoves.length > 0 && computerMoves.length > 0) {
+  if (moves.length > 0 && pcMoves.length > 0) {
     let count = 0;
     let same = 0;
-    userMoves.forEach(move  => {
-      if (move.letter === computerMoves[count].letter){
+    moves.forEach(move  => {
+      if (move.letter === pcMoves[count].letter){
         same++;
       };
       count++
     })
-    if (same === userMoves.length){
+    if (same === pcMoves.length) {
+      return 'tempWin'
       correct++
       updateBackground()
+    }
+    if (same === moves.length){
      return 'tempWin'
     }
     correct--
@@ -280,15 +301,19 @@ function checkSequence(){
 }
 
 function clearContainer(){
+  clearTimeout(pressButtons);
+  clearTimeout(playLettersTime);
   container.innerHTML = '';
-  upper.innerHTML = '';
-  left.innerHTML = '';
-  bottom.innerHTML = '';
-  right.innerHTML = '';
+
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].node.innerHTML = '';
+    buttons[i].node.classList.add('off')
+  }
+
   container.classList.remove('message')
 }
 
-function renderText(string, node, duration = speed, currentPlayer = 'Computer') {
+function renderText(string, node, duration = speed, player = 'Computer') {
   node.classList.remove('off')
   node.innerHTML = `<h2>${string}</h2>`;
   releaseButtons = setTimeout(function(){
@@ -302,7 +327,7 @@ function playLetters(moves, duration = speed){
   if (moves.length > 0) {
     moves.forEach((move, index) => {
       pressButtons = setTimeout(function(){
-        renderText(move.letter, move.node, duration, currentPlayer);
+        renderText(move.letter, move.node, duration, player);
       }, duration * index);
     });
     return pressButtons;
@@ -310,44 +335,51 @@ function playLetters(moves, duration = speed){
 }
 
 function renderLostRound() {
+
+  clearContainer();
+
   renderText(`let me repeat`, bottomCenter, speed, 'User');
-  userMoves = [];
-  currentPlayer = 'Computer'
-  setTimeout( function() {
-    playLetters(computerMoves, speed)
+  moves = [];
+  player = 'Computer'
+  playLettersTime = setTimeout( function() {
+    playLetters(pcMoves, speed)
   }, speed);
+
   setTimeout( function() {
-    currentPlayer = 'User';
-  }, computerMoves.length * speed)
+    player = 'User';
+    playRound('User')
+  }, pcMoves.length * speed)
+
+  return playLettersTime
 }
 
 function playRound(player){
-    var firstRound = currentRound === 0;
+    var firstRound = round === 0;
     let tempWin = 'wrong';
 
     if (player === 'User') {
       tempWin = checkSequence();
     }
 
-    if (tempWin === 'wrong' && currentPlayer === 'User') {
+    if (tempWin === 'wrong' && player === 'User') {
       renderLostRound()
-      currentRound++
+      round++
     }
 
-    winner = tempWin && userMoves.length === computerMoves.length;
-    if (firstRound || tempWin === 'tempWin' && userStrings.length <= currentRound ){
+    winner = tempWin && moves.length === pcMoves.length;
+    if (firstRound || tempWin === 'tempWin'){
       if (firstRound || winner)  {
-        currentPlayer = 'Computer';
+        player = 'Computer';
         move = computerChooseLetter();
-        userMoves = [];
-        console.log(`currentPlayer: ${currentPlayer}, currentLetter: ${move}, array: ${computerLetters}`);
+        moves = [];
+        console.log(`player: ${player}, currentLetter: ${move}, array: ${pcMoves}`);
           setTimeout( function() {
-            playLetters(computerMoves, speed)
+            playLetters(pcMoves, speed)
           }, speed);
         setTimeout( function() {
-          currentPlayer = 'User';
-          currentRound++
-        }, computerMoves.length * speed)
+          player = 'User';
+          round++
+        }, pcMoves.length * speed)
       }
     }
 

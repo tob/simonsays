@@ -121,6 +121,11 @@ li {
 	-webkit-animation-timing-function: linear;
 }
 
+.shake > .button {
+  background-color: white;
+  color: white;
+}
+
 
 
 /*

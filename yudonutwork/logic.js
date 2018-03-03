@@ -124,7 +124,10 @@ let winner;
 let currentRound = 0;
 let correct = 0;
 let pressButtons;
+let releaseButton;
+let speed = 1000;
 
+var wrapper = document.querySelector('.wrapper');
 var container = document.querySelector('#message');
 var bottomCenter = document.querySelector('#bottomCenter');
 var upper = document.querySelector('#upper');
@@ -163,13 +166,18 @@ function addListeners() {
 function userDoes(e) {
   if (currentPlayer === 'Computer') {
     console.log('not your turn, now is time of' + currentPlayer);
-    bottomCenter.innerHTML = '<h1>NOT YOUR TURN</h1>'
     clearTimeout(pressButtons);
+    container.classList.add('message')
+    clearContainer();
+    wrapper.classList.add('shake')
+    setTimeout(function() {
+      wrapper.classList.remove('shake')
+    }, speed);
+    renderText('<h1>NOT YOUR TURN</h1>', message, speed)
+    playRound('User')
     return
   }
-
   userLetter = e.key;
-
   //if user Clicks on button
   if (e.target.innerHTML === stringsBucket[0]){
     userLetter = e.target.innerHTML
@@ -199,8 +207,8 @@ function userDoes(e) {
   }
 
   userMoves.push(move)
-  renderText(move.letter, move.node, 200, currentPlayer);
-  playRound()
+  renderText(move.letter, move.node, 500, currentPlayer);
+  playRound('User')
 
   return move
 }
@@ -254,14 +262,12 @@ function checkSequence(){
   if (userMoves.length > 0 && computerMoves.length > 0) {
     let count = 0;
     let same = 0;
-
     userMoves.forEach(move  => {
       if (move.letter === computerMoves[count].letter){
         same++;
       };
       count++
     })
-
     if (same === userMoves.length){
       correct++
       updateBackground()
@@ -275,52 +281,56 @@ function checkSequence(){
 
 function clearContainer(){
   container.innerHTML = '';
+  upper.innerHTML = '';
+  left.innerHTML = '';
+  bottom.innerHTML = '';
+  right.innerHTML = '';
   container.classList.remove('message')
 }
 
-function playWin(){
-  //flash buttons
-  for (var i = 0; i <= lettersBucket.length; i++) {
-    setTimeout(function() {
-      playLetters(MovesPoll, 1000)
-    }, 1200 * i)
-  }
-}
-
-function renderText(string, node, duration = 1000, currentPlayer = 'Computer') {
+function renderText(string, node, duration = speed, currentPlayer = 'Computer') {
   node.classList.remove('off')
   node.innerHTML = `<h2>${string}</h2>`;
-  pressButtons = setTimeout(function(){
+  releaseButtons = setTimeout(function(){
       node.classList.add('off')
       node.innerHTML = '';
-    }, duration);
-  return pressButtons;
+    }, duration - 200);
+  return releaseButtons
 }
 
-function playLetters(moves, duration = 1000){
+function playLetters(moves, duration = speed){
   if (moves.length > 0) {
     moves.forEach((move, index) => {
-      setTimeout(function(){
+      pressButtons = setTimeout(function(){
         renderText(move.letter, move.node, duration, currentPlayer);
       }, duration * index);
     });
+    return pressButtons;
   }
 }
 
-function playRound(){
+function renderLostRound() {
+  renderText(`let me repeat`, bottomCenter, speed, 'User');
+  userMoves = [];
+  currentPlayer = 'Computer'
+  setTimeout( function() {
+    playLetters(computerMoves, speed)
+  }, speed);
+  setTimeout( function() {
+    currentPlayer = 'User';
+  }, computerMoves.length * speed)
+}
+
+function playRound(player){
     var firstRound = currentRound === 0;
-    var tempWin = checkSequence();
+    let tempWin = 'wrong';
+
+    if (player === 'User') {
+      tempWin = checkSequence();
+    }
 
     if (tempWin === 'wrong' && currentPlayer === 'User') {
-      renderText(`let me repeat`, bottomCenter, 1000, 'User');
-      userMoves = [];
-      currentPlayer = 'Computer'
-      setTimeout( function() {
-        playLetters(computerMoves, 1000)
-      }, 1000);
-      setTimeout( function() {
-        currentPlayer = 'User';
-      }, computerMoves.length * 1000)
+      renderLostRound()
       currentRound++
     }
 
@@ -332,11 +342,12 @@ function playRound(){
         userMoves = [];
         console.log(`currentPlayer: ${currentPlayer}, currentLetter: ${move}, array: ${computerLetters}`);
           setTimeout( function() {
-            playLetters(computerMoves, 1000)
-          }, 1000);
+            playLetters(computerMoves, speed)
+          }, speed);
         setTimeout( function() {
           currentPlayer = 'User';
-        }, computerMoves.length * 1000)
+          currentRound++
+        }, computerMoves.length * speed)
       }
     }
 

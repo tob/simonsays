@@ -1,0 +1,66 @@
+.square{
+  display: block;
+  width: 50%;
+  height: 50%;
+  float: left;
+}
+.square__text{
+  border: 1px solid black;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  color: white;
+  font-size: 50px;
+}
+
+.title {
+  font-size: 24px;
+}
+.yellow{
+  background: yellow;
+}
+.yellow.highlight {
+  background: orange;
+}
+
+.blue{
+  background: blue;
+}
+.red{
+  background: red;
+}
+.green{
+  background: green;
+}
+.pink{
+  background: pink;
+}
+.black{
+  background: black;
+}
+
+.off{
+  background: grey;
+}
+
+.highlight{
+  background: black;
+}
+
+.box {
+  border-radius: 5px;
+  border: solid 1px;
+  padding: 20px;
+  font-size: 150%;
+  text-align: center;
+  color: white;
+}
+
+.wrapper {
+  width: 100%;
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(0, 100px);
+  grid-template-rows: 100px 100px 100px;
+  grid-auto-flow: column;
+}

@@ -136,18 +136,22 @@ const gameState = {
     {
       letter: 'W',
       node: document.querySelector('#upper'),
+      color: '#ff0000',
     },
     {
       letter: 'A',
       node: document.querySelector('#left'),
+      color: '#ffff00'
     },
     {
       letter: 'S',
       node: document.querySelector('#bottom'),
+      color: '#006600'
     },
     {
       letter: 'D',
       node: document.querySelector('#right'),
+      color: '#0033cc'
     }
   ],
   correct: 0,
@@ -262,12 +266,13 @@ function computerChooseLetter() {
   let letter = Math.floor(Math.random() * buttons.length)
   computerMove = buttons[letter];
   pcMoves.push(computerMove)
-  return computerMove.letter;
+  return computerMove;
 }
 
 function updateBackground(move = buttons[0]){
-  console.log(correct);
-  snowfallConfig.particles.number.value = correct
+  correct++
+  console.log(`CORRECT: ${correct}`);
+  snowfallConfig.particles.number.value = pcMoves.length
   snowfallConfig.particles.line_linked.distance = 300 * pcMoves.length
   snowfallConfig.particles.shape.polygon.nb_sides = 3 + pcMoves.length
   if (buttons.length > 0) {
@@ -286,16 +291,11 @@ function checkSequence(){
       };
       count++
     })
-    if (same === pcMoves.length) {
-      return 'tempWin'
-      correct++
-      updateBackground()
-    }
     if (same === moves.length){
      return 'tempWin'
+     correct++
     }
     correct--
-    updateBackground()
     return 'wrong'
   }
 }
@@ -314,7 +314,7 @@ function clearContainer(){
 }
 
 function renderText(string, node, duration = speed, player = 'Computer') {
-  node.classList.remove('off')
+  node.classList.remove('off');
   node.innerHTML = `<h2>${string}</h2>`;
   releaseButtons = setTimeout(function(){
       node.classList.add('off')
@@ -371,6 +371,7 @@ function playRound(player){
       if (firstRound || winner)  {
         player = 'Computer';
         move = computerChooseLetter();
+        updateBackground(move)
         moves = [];
         console.log(`player: ${player}, currentLetter: ${move}, array: ${pcMoves}`);
           setTimeout( function() {

@@ -118,10 +118,11 @@ const snowfallConfig = {
   "retina_detect": true
 }
 
-let userLetter;
+let playLettersTime;
 let pressButtons;
 let releaseButtons;
-let playLettersTime;
+let setPlayer;
+let userLetter;
 
 var wrapper = document.querySelector('.wrapper');
 var container = document.querySelector('#message');
@@ -182,6 +183,7 @@ var {
 
 function addListeners() {
   document.addEventListener('keydown', userDoes, true);
+  // upper.addEventListener('click',() => userDoes(), true);
 }
 
 function shake(node) {
@@ -192,25 +194,16 @@ function shake(node) {
 }
 
 function userDoes(e) {
-  console.log(  buttons,
-    correct,
-    message,
-    move,
-    moves,
-    pcMoves,
-    player,
-    round,
-    speed,
-    tempWin,
-    winner,);
-
+  // if (gameState.round = 0) {
+    container.classList.remove('message')
+  // }
   if (player === 'Computer') {
+    moves = [];
     console.log('not your turn, now is time of' + player);
     shake(wrapper)
     clearContainer();
-    renderText('<h1>NOT YOUR TURN</h1>', message, speed)
     setTimeout(function() {
-      renderLostRound();
+      renderRound();
     }, speed);
     return
   }
@@ -265,7 +258,7 @@ function renderNoConnection(){
 function computerChooseLetter() {
   let letter = Math.floor(Math.random() * buttons.length)
   computerMove = buttons[letter];
-  pcMoves.push(computerMove)
+  pcMoves.push(computerMove);
   return computerMove;
 }
 
@@ -274,7 +267,7 @@ function updateBackground(move = buttons[0]){
   console.log(`CORRECT: ${correct}`);
   snowfallConfig.particles.number.value = pcMoves.length
   snowfallConfig.particles.line_linked.distance = 300 * pcMoves.length
-  snowfallConfig.particles.shape.polygon.nb_sides = 3 + pcMoves.length
+  snowfallConfig.particles.shape.polygon.nb_sides = 3 + correct
   if (buttons.length > 0) {
     snowfallConfig.particles.color.value = move.color
   }
@@ -288,29 +281,31 @@ function checkSequence(){
     moves.forEach(move  => {
       if (move.letter === pcMoves[count].letter){
         same++;
+        player = 'User'
       };
       count++
     })
     if (same === moves.length){
      return 'tempWin'
-     correct++
     }
     correct--
+    shake(wrapper)
     return 'wrong'
   }
 }
 
 function clearContainer(){
   clearTimeout(pressButtons);
+  clearTimeout(releaseButtons);
   clearTimeout(playLettersTime);
+  clearTimeout(setPlayer);
   container.innerHTML = '';
 
   for (var i = 0; i < buttons.length; i++) {
     buttons[i].node.innerHTML = '';
-    buttons[i].node.classList.add('off')
+    buttons[i].node.classList.add('off');
   }
-
-  container.classList.remove('message')
+  player = 'Computer';
 }
 
 function renderText(string, node, duration = speed, player = 'Computer') {
@@ -320,7 +315,6 @@ function renderText(string, node, duration = speed, player = 'Computer') {
       node.classList.add('off')
       node.innerHTML = '';
     }, duration - 200);
-  return releaseButtons
 }
 
 function playLetters(moves, duration = speed){
@@ -330,57 +324,45 @@ function playLetters(moves, duration = speed){
         renderText(move.letter, move.node, duration, player);
       }, duration * index);
     });
-    return pressButtons;
   }
 }
 
-function renderLostRound() {
+function renderRound() {
+  console.log(`player: ${player}, currentLetter: ${move}, array: ${pcMoves.map(a => a.letter)}`);
 
   clearContainer();
-
-  renderText(`let me repeat`, bottomCenter, speed, 'User');
   moves = [];
-  player = 'Computer'
+  player = 'Computer';
   playLettersTime = setTimeout( function() {
-    playLetters(pcMoves, speed)
+    playLetters(pcMoves, speed);
   }, speed);
 
-  setTimeout( function() {
+  setPlayer = setTimeout( function() {
     player = 'User';
-    playRound('User')
-  }, pcMoves.length * speed)
+    playRound('User');
+  }, pcMoves.length * speed);
 
-  return playLettersTime
 }
 
 function playRound(player){
     var firstRound = round === 0;
     let tempWin = 'wrong';
-
     if (player === 'User') {
       tempWin = checkSequence();
     }
-
     if (tempWin === 'wrong' && player === 'User') {
-      renderLostRound()
-      round++
+      renderRound()
     }
 
     winner = tempWin && moves.length === pcMoves.length;
     if (firstRound || tempWin === 'tempWin'){
       if (firstRound || winner)  {
-        player = 'Computer';
         move = computerChooseLetter();
-        updateBackground(move)
         moves = [];
-        console.log(`player: ${player}, currentLetter: ${move}, array: ${pcMoves}`);
-          setTimeout( function() {
-            playLetters(pcMoves, speed)
-          }, speed);
-        setTimeout( function() {
-          player = 'User';
-          round++
-        }, pcMoves.length * speed)
+        player = 'Computer';
+        renderRound();
+        round++
+        updateBackground(move)
       }
     }
 

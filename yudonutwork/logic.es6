@@ -118,19 +118,13 @@ const snowfallConfig = {
   "retina_detect": true
 }
 
-let playLettersTime;
-let pressButtons;
-let releaseButtons;
-let setPlayer;
-let userLetter;
-
-var wrapper = document.querySelector('.wrapper');
-var container = document.querySelector('#message');
-var bottomCenter = document.querySelector('#bottomCenter');
-var upper = document.querySelector('#upper');
-var bottom = document.querySelector('#bottom');
-var left = document.querySelector('#left');
-var right = document.querySelector('#right');
+const wrapper = document.querySelector('.wrapper');
+const container = document.querySelector('#message');
+const bottomCenter = document.querySelector('#bottomCenter');
+const upper = document.querySelector('#upper');
+const bottom = document.querySelector('#bottom');
+const left = document.querySelector('#left');
+const right = document.querySelector('#right');
 
 const gameState = {
   buttons: [
@@ -167,6 +161,12 @@ const gameState = {
   message: '',
 }
 
+let playLettersTime;
+let pressButtons;
+let releaseButtons;
+let setPlayer;
+let userLetter;
+
 var {
   buttons,
   correct,
@@ -186,114 +186,6 @@ function addListeners() {
   // upper.addEventListener('click',() => userDoes(), true);
 }
 
-function shake(node) {
-  node.classList.add('shake')
-  setTimeout(function(){
-    node.classList.remove('shake')
-  }, speed)
-}
-
-function userDoes(e) {
-  // if (gameState.round = 0) {
-    container.classList.remove('message')
-  // }
-  if (player === 'Computer') {
-    moves = [];
-    console.log('not your turn, now is time of' + player);
-    shake(wrapper)
-    clearContainer();
-    setTimeout(function() {
-      renderRound();
-    }, speed);
-    return
-  }
-
-  if (player === 'User') {
-    userLetter = e.key;
-    //if user Clicks on Y button
-    if (e.target.innerHTML === 'Y'){
-      userLetter = e.target.innerHTML
-    }
-
-    var move = {};
-    switch (userLetter) {
-      case 'w':
-          move = buttons[0]
-        break;
-      case 'a':
-          move = buttons[1]
-        break;
-      case 's':
-          move = buttons[2]
-        break;
-      case 'd':
-          move = buttons[3]
-        break;
-      default:
-       move = {
-         letter: '###',
-         node: bottomCenter
-       }
-    }
-    moves.push(move)
-    clearContainer();
-    renderText(move.letter, move.node, 500, player);
-    playRound('User')
-  }
-  return move
-}
-
-function renderNoConnection(){
-  container.innerHTML = noConnectionMessage;
-  var list = document.querySelector('ul')
-  var helpMessage = document.createElement('li');
-  var startLetter = document.createElement('button');
-  startLetter.innerHTML = 'Y'
-  startLetter.addEventListener('click', userDoes, true);
-  helpMessage.innerHTML = `Asking your browser `
-  helpMessage.append(startLetter);
-  list.appendChild(helpMessage);
-}
-
-function computerChooseLetter() {
-  let letter = Math.floor(Math.random() * buttons.length)
-  computerMove = buttons[letter];
-  pcMoves.push(computerMove);
-  return computerMove;
-}
-
-function updateBackground(move = buttons[0]){
-  correct++
-  console.log(`CORRECT: ${correct}`);
-  snowfallConfig.particles.number.value = pcMoves.length
-  snowfallConfig.particles.line_linked.distance = 300 * pcMoves.length
-  snowfallConfig.particles.shape.polygon.nb_sides = 3 + correct
-  if (buttons.length > 0) {
-    snowfallConfig.particles.color.value = move.color
-  }
-  particlesJS("snowfall",{...snowfallConfig})
-}
-
-function checkSequence(){
-  if (moves.length > 0 && pcMoves.length > 0) {
-    let count = 0;
-    let same = 0;
-    moves.forEach(move  => {
-      if (move.letter === pcMoves[count].letter){
-        same++;
-        player = 'User'
-      };
-      count++
-    })
-    if (same === moves.length){
-     return 'tempWin'
-    }
-    correct--
-    shake(wrapper)
-    return 'wrong'
-  }
-}
-
 function clearContainer(){
   clearTimeout(pressButtons);
   clearTimeout(releaseButtons);
@@ -308,15 +200,6 @@ function clearContainer(){
   player = 'Computer';
 }
 
-function renderText(string, node, duration = speed, player = 'Computer') {
-  node.classList.remove('off');
-  node.innerHTML = `<h2>${string}</h2>`;
-  releaseButtons = setTimeout(function(){
-      node.classList.add('off')
-      node.innerHTML = '';
-    }, duration - 200);
-}
-
 function playLetters(moves, duration = speed){
   if (moves.length > 0) {
     moves.forEach((move, index) => {
@@ -325,6 +208,18 @@ function playLetters(moves, duration = speed){
       }, duration * index);
     });
   }
+}
+
+function renderNoConnection(){
+  container.innerHTML = noConnectionMessage;
+  var list = document.querySelector('ul')
+  var helpMessage = document.createElement('li');
+  var startLetter = document.createElement('button');
+  startLetter.innerHTML = 'Y'
+  startLetter.addEventListener('click', userDoes, true);
+  helpMessage.innerHTML = `Asking your browser `
+  helpMessage.append(startLetter);
+  list.appendChild(helpMessage);
 }
 
 function renderRound() {
@@ -342,6 +237,91 @@ function renderRound() {
     playRound('User');
   }, pcMoves.length * speed);
 
+}
+
+function renderText(string, node, duration = speed, player = 'Computer') {
+  node.classList.remove('off');
+  node.innerHTML = string;
+  releaseButtons = setTimeout(function(){
+      node.classList.add('off')
+      node.innerHTML = '';
+    }, duration - 200);
+}
+
+function shake(node) {
+  node.classList.add('shake')
+  setTimeout(function(){
+    node.classList.remove('shake')
+  }, speed)
+}
+
+function updateBackground(move = buttons[0]){
+  correct++
+  console.log(`CORRECT: ${correct}`);
+  snowfallConfig.particles.number.value = pcMoves.length
+  snowfallConfig.particles.line_linked.distance = 300 * pcMoves.length
+  snowfallConfig.particles.shape.polygon.nb_sides = 3 + correct
+  if (buttons.length > 0) {
+    snowfallConfig.particles.color.value = move.color
+  }
+  particlesJS("snowfall",{...snowfallConfig})
+}
+
+
+
+// Logic starts here
+function computerChooseLetter() {
+  let letter = Math.floor(Math.random() * buttons.length)
+  computerMove = buttons[letter];
+  pcMoves.push(computerMove);
+  return computerMove;
+}
+
+function userDoes(e) {
+  if (round === 1) {
+    container.classList.remove('message')
+  }
+
+  if (player === 'Computer') {
+    moves = [];
+    console.log('not your turn, now is time of' + player);
+    shake(wrapper)
+    clearContainer();
+    setTimeout(function() {
+      renderRound();
+    }, speed);
+    return
+  }
+
+  if (player === 'User') {
+    userLetter = e.key || e.target.innerHTML;
+
+    var move = {};
+    switch (userLetter) {
+      case 'w':
+          move = buttons[0]
+        break;
+      case 'a':
+          move = buttons[1]
+        break;
+      case 's':
+          move = buttons[2]
+        break;
+      case 'd':
+          move = buttons[3]
+        break;
+      default:
+       move = {
+         letter: '',
+         node: bottomCenter
+       }
+    }
+    moves.push(move)
+    clearContainer();
+    renderText(move.letter, move.node, 500, player);
+    playRound('User')
+  }
+  return move
 }
 
 function playRound(player){
@@ -365,8 +345,28 @@ function playRound(player){
         updateBackground(move)
       }
     }
-
 }
+
+function checkSequence(){
+  if (moves.length > 0 && pcMoves.length > 0) {
+    let count = 0;
+    let same = 0;
+    moves.forEach(move  => {
+      if (move.letter === pcMoves[count].letter){
+        same++;
+        player = 'User'
+      };
+      count++
+    })
+    if (same === moves.length){
+     return 'tempWin'
+    }
+    correct--
+    shake(wrapper)
+    return 'wrong'
+  }
+}
+
 
 renderNoConnection()
 addListeners()

@@ -20,6 +20,11 @@ button {
   border-radius: 5px;
 }
 
+button > p {
+  position: absolute;
+  top: 50%;
+}
+
 li {
   line-height: 30px;
 }
@@ -46,6 +51,7 @@ li {
 .wrapper > div {
   padding: 1em;
   text-align: center;
+  line-height: 100%;
   font-size: 24px;
 }
 

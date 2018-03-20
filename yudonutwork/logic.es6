@@ -118,18 +118,13 @@ const snowfallConfig = {
   "retina_detect": true
 }
 
-let userLetter;
-let pressButtons;
-let releaseButtons;
-let playLettersTime;
-
-var wrapper = document.querySelector('.wrapper');
-var container = document.querySelector('#message');
-var bottomCenter = document.querySelector('#bottomCenter');
-var upper = document.querySelector('#upper');
-var bottom = document.querySelector('#bottom');
-var left = document.querySelector('#left');
-var right = document.querySelector('#right');
+const wrapper = document.querySelector('.wrapper');
+const container = document.querySelector('#message');
+const bottomCenter = document.querySelector('#bottomCenter');
+const upper = document.querySelector('#upper');
+const bottom = document.querySelector('#bottom');
+const left = document.querySelector('#left');
+const right = document.querySelector('#right');
 
 const gameState = {
   buttons: [
@@ -166,6 +161,12 @@ const gameState = {
   message: '',
 }
 
+let playLettersTime;
+let pressButtons;
+let releaseButtons;
+let setPlayer;
+let userLetter;
+
 var {
   buttons,
   correct,
@@ -182,6 +183,69 @@ var {
 
 function addListeners() {
   document.addEventListener('keydown', userDoes, true);
+  // upper.addEventListener('click',() => userDoes(), true);
+}
+
+function clearContainer(){
+  clearTimeout(pressButtons);
+  clearTimeout(releaseButtons);
+  clearTimeout(playLettersTime);
+  clearTimeout(setPlayer);
+  container.innerHTML = '';
+
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].node.innerHTML = '';
+    buttons[i].node.classList.add('off');
+  }
+  player = 'Computer';
+}
+
+function playLetters(moves, duration = speed){
+  if (moves.length > 0) {
+    moves.forEach((move, index) => {
+      pressButtons = setTimeout(function(){
+        renderText(move.letter, move.node, duration, player);
+      }, duration * index);
+    });
+  }
+}
+
+function renderNoConnection(){
+  container.innerHTML = noConnectionMessage;
+  var list = document.querySelector('ul')
+  var helpMessage = document.createElement('li');
+  var startLetter = document.createElement('button');
+  startLetter.innerHTML = 'Y'
+  startLetter.addEventListener('click', userDoes, true);
+  helpMessage.innerHTML = `Asking your browser `
+  helpMessage.append(startLetter);
+  list.appendChild(helpMessage);
+}
+
+function renderRound() {
+  console.log(`player: ${player}, currentLetter: ${move}, array: ${pcMoves.map(a => a.letter)}`);
+
+  clearContainer();
+  moves = [];
+  player = 'Computer';
+  playLettersTime = setTimeout( function() {
+    playLetters(pcMoves, speed);
+  }, speed);
+
+  setPlayer = setTimeout( function() {
+    player = 'User';
+    playRound('User');
+  }, pcMoves.length * speed);
+
+}
+
+function renderText(string, node, duration = speed, player = 'Computer') {
+  node.classList.remove('off');
+  node.innerHTML = string;
+  releaseButtons = setTimeout(function(){
+      node.classList.add('off')
+      node.innerHTML = '';
+    }, duration - 200);
 }
 
 function shake(node) {
@@ -191,36 +255,46 @@ function shake(node) {
   }, speed)
 }
 
+function updateBackground(move = buttons[0]){
+  correct++
+  console.log(`CORRECT: ${correct}`);
+  snowfallConfig.particles.number.value = pcMoves.length
+  snowfallConfig.particles.line_linked.distance = 300 * pcMoves.length
+  snowfallConfig.particles.shape.polygon.nb_sides = 3 + correct
+  if (buttons.length > 0) {
+    snowfallConfig.particles.color.value = move.color
+  }
+  particlesJS("snowfall",{...snowfallConfig})
+}
+
+
+
+// Logic starts here
+function computerChooseLetter() {
+  let letter = Math.floor(Math.random() * buttons.length)
+  computerMove = buttons[letter];
+  pcMoves.push(computerMove);
+  return computerMove;
+}
+
 function userDoes(e) {
-  console.log(  buttons,
-    correct,
-    message,
-    move,
-    moves,
-    pcMoves,
-    player,
-    round,
-    speed,
-    tempWin,
-    winner,);
+  if (round === 1) {
+    container.classList.remove('message')
+  }
 
   if (player === 'Computer') {
+    moves = [];
     console.log('not your turn, now is time of' + player);
     shake(wrapper)
     clearContainer();
-    renderText('<h1>NOT YOUR TURN</h1>', message, speed)
     setTimeout(function() {
-      renderLostRound();
+      renderRound();
     }, speed);
     return
   }
 
   if (player === 'User') {
-    userLetter = e.key;
-    //if user Clicks on Y button
-    if (e.target.innerHTML === 'Y'){
-      userLetter = e.target.innerHTML
-    }
+    userLetter = e.key || e.target.innerHTML;
 
     var move = {};
     switch (userLetter) {
@@ -238,7 +312,7 @@ function userDoes(e) {
         break;
       default:
        move = {
-         letter: '###',
+         letter: '',
          node: bottomCenter
        }
     }
@@ -250,35 +324,27 @@ function userDoes(e) {
   return move
 }
 
-function renderNoConnection(){
-  container.innerHTML = noConnectionMessage;
-  var list = document.querySelector('ul')
-  var helpMessage = document.createElement('li');
-  var startLetter = document.createElement('button');
-  startLetter.innerHTML = 'Y'
-  startLetter.addEventListener('click', userDoes, true);
-  helpMessage.innerHTML = `Asking your browser `
-  helpMessage.append(startLetter);
-  list.appendChild(helpMessage);
-}
+function playRound(player){
+    var firstRound = round === 0;
+    let tempWin = 'wrong';
+    if (player === 'User') {
+      tempWin = checkSequence();
+    }
+    if (tempWin === 'wrong' && player === 'User') {
+      renderRound()
+    }
 
-function computerChooseLetter() {
-  let letter = Math.floor(Math.random() * buttons.length)
-  computerMove = buttons[letter];
-  pcMoves.push(computerMove)
-  return computerMove;
-}
-
-function updateBackground(move = buttons[0]){
-  correct++
-  console.log(`CORRECT: ${correct}`);
-  snowfallConfig.particles.number.value = pcMoves.length
-  snowfallConfig.particles.line_linked.distance = 300 * pcMoves.length
-  snowfallConfig.particles.shape.polygon.nb_sides = 3 + pcMoves.length
-  if (buttons.length > 0) {
-    snowfallConfig.particles.color.value = move.color
-  }
-  particlesJS("snowfall",{...snowfallConfig})
+    winner = tempWin && moves.length === pcMoves.length;
+    if (firstRound || tempWin === 'tempWin'){
+      if (firstRound || winner)  {
+        move = computerChooseLetter();
+        moves = [];
+        player = 'Computer';
+        renderRound();
+        round++
+        updateBackground(move)
+      }
+    }
 }
 
 function checkSequence(){
@@ -288,103 +354,19 @@ function checkSequence(){
     moves.forEach(move  => {
       if (move.letter === pcMoves[count].letter){
         same++;
+        player = 'User'
       };
       count++
     })
     if (same === moves.length){
      return 'tempWin'
-     correct++
     }
     correct--
+    shake(wrapper)
     return 'wrong'
   }
 }
 
-function clearContainer(){
-  clearTimeout(pressButtons);
-  clearTimeout(playLettersTime);
-  container.innerHTML = '';
-
-  for (var i = 0; i < buttons.length; i++) {
-    buttons[i].node.innerHTML = '';
-    buttons[i].node.classList.add('off')
-  }
-
-  container.classList.remove('message')
-}
-
-function renderText(string, node, duration = speed, player = 'Computer') {
-  node.classList.remove('off');
-  node.innerHTML = `<h2>${string}</h2>`;
-  releaseButtons = setTimeout(function(){
-      node.classList.add('off')
-      node.innerHTML = '';
-    }, duration - 200);
-  return releaseButtons
-}
-
-function playLetters(moves, duration = speed){
-  if (moves.length > 0) {
-    moves.forEach((move, index) => {
-      pressButtons = setTimeout(function(){
-        renderText(move.letter, move.node, duration, player);
-      }, duration * index);
-    });
-    return pressButtons;
-  }
-}
-
-function renderLostRound() {
-
-  clearContainer();
-
-  renderText(`let me repeat`, bottomCenter, speed, 'User');
-  moves = [];
-  player = 'Computer'
-  playLettersTime = setTimeout( function() {
-    playLetters(pcMoves, speed)
-  }, speed);
-
-  setTimeout( function() {
-    player = 'User';
-    playRound('User')
-  }, pcMoves.length * speed)
-
-  return playLettersTime
-}
-
-function playRound(player){
-    var firstRound = round === 0;
-    let tempWin = 'wrong';
-
-    if (player === 'User') {
-      tempWin = checkSequence();
-    }
-
-    if (tempWin === 'wrong' && player === 'User') {
-      renderLostRound()
-      round++
-    }
-
-    winner = tempWin && moves.length === pcMoves.length;
-    if (firstRound || tempWin === 'tempWin'){
-      if (firstRound || winner)  {
-        player = 'Computer';
-        move = computerChooseLetter();
-        updateBackground(move)
-        moves = [];
-        console.log(`player: ${player}, currentLetter: ${move}, array: ${pcMoves}`);
-          setTimeout( function() {
-            playLetters(pcMoves, speed)
-          }, speed);
-        setTimeout( function() {
-          player = 'User';
-          round++
-        }, pcMoves.length * speed)
-      }
-    }
-
-}
 
 renderNoConnection()
 addListeners()

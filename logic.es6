@@ -129,22 +129,22 @@ const right = document.querySelector('#right');
 const gameState = {
   buttons: [
     {
-      letter: 'W',
+      key: 'w',
       node: document.querySelector('#upper'),
       color: '#ff0000',
     },
     {
-      letter: 'A',
+      key: 'a',
       node: document.querySelector('#left'),
       color: '#ffff00'
     },
     {
-      letter: 'S',
+      key: 's',
       node: document.querySelector('#bottom'),
       color: '#006600'
     },
     {
-      letter: 'D',
+      key: 'd',
       node: document.querySelector('#right'),
       color: '#0033cc'
     }
@@ -165,7 +165,7 @@ let playLettersTime;
 let pressButtons;
 let releaseButtons;
 let setPlayer;
-let userLetter;
+let userKey;
 
 var {
   buttons,
@@ -204,7 +204,7 @@ function playLetters(moves, duration = speed){
   if (moves.length > 0) {
     moves.forEach((move, index) => {
       pressButtons = setTimeout(function(){
-        renderText(move.letter, move.node, duration, player);
+        renderText(move.key, move.node, duration, player);
       }, duration * index);
     });
   }
@@ -223,7 +223,7 @@ function renderNoConnection(){
 }
 
 function renderRound() {
-  console.log(`player: ${player}, currentLetter: ${move}, array: ${pcMoves.map(a => a.letter)}`);
+  console.log(`player: ${player}, currentLetter: ${move}, array: ${pcMoves.map(a => a.key)}`);
 
   clearContainer();
   moves = [];
@@ -241,12 +241,13 @@ function renderRound() {
 
 function renderText(string, node, duration = speed, player = 'Computer') {
   node.classList.remove('off');
-  node.innerHTML = string;
+  // node.innerHTML = string;
   releaseButtons = setTimeout(function(){
       node.classList.add('off')
       node.innerHTML = '';
     }, duration - 200);
 }
+
 
 function shake(node) {
   node.classList.add('shake')
@@ -271,8 +272,8 @@ function updateBackground(move = buttons[0]){
 
 // Logic starts here
 function computerChooseLetter() {
-  let letter = Math.floor(Math.random() * buttons.length)
-  computerMove = buttons[letter];
+  let randNumb = Math.floor(Math.random() * buttons.length)
+  computerMove = buttons[randNumb];
   pcMoves.push(computerMove);
   return computerMove;
 }
@@ -294,31 +295,36 @@ function userDoes(e) {
   }
 
   if (player === 'User') {
-    userLetter = e.key || e.target.innerHTML;
-
+    userKey = e.key || e.target.innerHTML;
+    console.info(userKey)
     var move = {};
-    switch (userLetter) {
+    switch (userKey) {
       case 'w':
+      case 'ArrowUp':
           move = buttons[0]
         break;
       case 'a':
+      case 'ArrowLeft':
           move = buttons[1]
         break;
       case 's':
+      case 'ArrowDown':
           move = buttons[2]
         break;
-      case 'd':
+      case 'd': 
+      case 'ArrowRight':
           move = buttons[3]
         break;
       default:
        move = {
-         letter: '',
+         key: '',
          node: bottomCenter
        }
     }
     moves.push(move)
+
     clearContainer();
-    renderText(move.letter, move.node, 500, player);
+    renderText(move.key, move.node, 500, player);
     playRound('User')
   }
   return move
@@ -337,10 +343,18 @@ function playRound(player){
     winner = tempWin && moves.length === pcMoves.length;
     if (firstRound || tempWin === 'tempWin'){
       if (firstRound || winner)  {
+        
+        clearContainer()
+       
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].node.classList.remove('off');
+        } 
+
         move = computerChooseLetter();
         moves = [];
         player = 'Computer';
-        renderRound();
+
+        setTimeout(renderRound, speed);
         round++
         updateBackground(move)
       }
@@ -352,7 +366,7 @@ function checkSequence(){
     let count = 0;
     let same = 0;
     moves.forEach(move  => {
-      if (move.letter === pcMoves[count].letter){
+      if (move.key === pcMoves[count].key){
         same++;
         player = 'User'
       };

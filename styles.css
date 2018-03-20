@@ -71,31 +71,37 @@ li {
   overflow: hidden;
   overflow-y: hidden;
   color: white;
+  border: 10px solid
 }
 
 .off {
   opacity: 0.5;
+  background-color: transparent !important; 
 }
 
 .button1 {
   grid-column: 2;
   grid-row: 2;
   background-color: red;
+  color: red
 }
 .button2 {
   grid-column: 1;
   grid-row: 3;
   background-color: orange;
+  color: orange;
 }
 .button3 {
   grid-column: 2;
   grid-row: 3;
   background-color: green;
+  color: green;
 }
 .button4 {
   grid-column: 3;
   grid-row: 3;
   background-color: blue;
+  color: blue;
 }
 .button5 {
   grid-column: 1 / 4;
@@ -123,13 +129,6 @@ li {
 	-webkit-animation-iteration-count: infinite;
 	-webkit-animation-timing-function: linear;
 }
-
-.shake > .button {
-  /* background-color: white;
-  color: white; */
-}
-
-
 
 /*
 

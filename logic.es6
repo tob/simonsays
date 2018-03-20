@@ -343,20 +343,20 @@ function playRound(player){
     winner = tempWin && moves.length === pcMoves.length;
     if (firstRound || tempWin === 'tempWin'){
       if (firstRound || winner)  {
-        
-        clearContainer()
-       
-        for (var i = 0; i < buttons.length; i++) {
-          buttons[i].node.classList.remove('off');
-        } 
-
         move = computerChooseLetter();
         moves = [];
         player = 'Computer';
 
-        setTimeout(renderRound, speed);
-        round++
-        updateBackground(move)
+        setTimeout(function(){
+          clearContainer()
+          for (var i = 0; i < buttons.length; i++) {
+            buttons[i].node.classList.remove('off');
+          }
+          setTimeout(renderRound, speed)
+          
+          round++
+          updateBackground(move) 
+        }, speed/2);
       }
     }
 }

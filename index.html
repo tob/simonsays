@@ -3,25 +3,46 @@
 Y?
 -->
 <html>
-<head>
-    <meta charset="utf-8" />
-    <title>YUDonutWork?</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
-    <script src="http://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <!-- <script src="http://lvh.me:4000/assets/wallpaper.js"></script> -->
-</head>
-<body>
-    <div id="snowfall"></div>
-    <div class="wrapper">
-      <div id="message" class="message"></div>
-      <div id="bottomCenter" class="button5"></div>
-      <div id="upper" class="button1 button off"></div>
-      <div id="left" class="button2 button off"></div>
-      <div id="bottom" class="button3 button off"></div>
-      <div id="right" class="button4 button off"></div>
-    </div>
+    <head>
+        <meta charset="utf-8" />
+        <title>YUDonutWork?</title>
+        <link rel="stylesheet" type="text/css" href="./styles.css">
+        <script type="text/javascript" src="./particles.min.js"></script>
+        <script src="./chromata.min.js"></script>
+    </head>
+    <body>
+        <script type="text/javascript" class="my-image" src="/js/wallpaper-api-1.1.js" ></script>
+        <div id="snowfall"></div>
+        <div class="wrapper">
+        <img src="./dolfjePc.jpg" width="500"/>
+        <div id="message" class="message"></div>
+        <div id="bottomCenter" class="button5"></div>
+        <div id="upper" class="button1 button off"></div>
+        <div id="left" class="button2 button off"></div>
+        <div id="bottom" class="button3 button off"></div>
+        <div id="right" class="button4 button off"></div>
+        </div>
+    
 
-    <script src="logic.es6"></script>
-</body>
+        <script>
+        var defaults = {
+            colorMode:	color,
+            compositeOperation:	lighten,
+            iterationLimit:	0,
+            key:	low,
+            lineMode:	smooth,
+            lineWidth:	2,
+            origin:	["bottom"],
+            outputSize:	container,
+            pathFinderCount:	27,
+            speed:	8,
+            turningAngle: 1π
+        };
+            var imageElement = document.querySelector('.my-image');
+            var chromata = new Chromata(imageElement, defaults);
+            chromata.start();
+        </script>
+        <script src="./logic.es6"></script>
+    </body>
 
 </html>

@@ -241,7 +241,10 @@ function renderRound() {
 
 function renderText(string, node, duration = speed, player = 'Computer') {
   node.classList.remove('off');
-  // node.innerHTML = string;
+  if (node === 'bottomCenter') {
+    node.innerHTML = string;
+  }
+
   releaseButtons = setTimeout(function(){
       node.classList.add('off')
       node.innerHTML = '';
@@ -260,7 +263,7 @@ function updateBackground(move = buttons[0]){
   correct++
   console.log(`CORRECT: ${correct}`);
   snowfallConfig.particles.number.value = pcMoves.length
-  snowfallConfig.particles.line_linked.distance = 300 * pcMoves.length
+  snowfallConfig.particles.line_linked.distance = 75 * correct
   snowfallConfig.particles.shape.polygon.nb_sides = 3 + correct
   if (buttons.length > 0) {
     snowfallConfig.particles.color.value = move.color
@@ -380,7 +383,6 @@ function checkSequence(){
     return 'wrong'
   }
 }
-
 
 renderNoConnection()
 addListeners()
